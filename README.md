@@ -1,95 +1,41 @@
-Glyph Matrix Example Project
-====================
+Gemini Assistant Glyph Animation - A Nothing SDK Project
+This project is a modification of the official GlyphMatrix-Example-Project from Nothing. It adds a new, standalone feature: a custom Glyph animation that automatically plays whenever the Google Assistant (Gemini) is actively listening.
 
-About the Demo
---------------
-This example project contains multiple toy demos:
-- `basic` demo which shows the application icon
-    - `Touch-down` (press down) to increment and display a counter
-    - `Touch-up` (release) to stop incrementing the counter
-- `glyphbutton` demo which shows a randomly populated grid
-    - `Long-press` the `Glyph Button` on the device to generate a new random grid
-- `animation` demo which shows an indefinite animation until the toy is deactivated
+The Feature
+The core goal was to create a visual cue on the back of the phone to confirm that the assistant is listening, especially when the screen is off or the phone is face down.
 
-After going through the `Setup` stage in this document the demo project can be run on the device.
-> Tip: `Short-press` the `Glyph Button` to navigate between the toys.
+Automatic Trigger: A pulsing microphone animation starts the moment the assistant is activated.
 
-The demo project already contains the necessary libraries (GlyphMatrix SDK) and source structure as an example. However, if you want to install libraries for your own application, please reference the [**SDK documentation**](https://github.com/KenFeng04/GlyphMatrix-Development-Kit).
+Hands-Free Confirmation: Works on the lock screen, providing a clear visual that your "Hey Google" was heard.
 
-This demo is written in Kotlin, it also utilize  a useful Kotlin wrapper `GlyphMatrixService.kt`，wrap around the original SDK that you can use in your own project.
+Automatic Stop: The animation plays for a set duration (currently 3 seconds) and then stops, releasing the Glyph hardware.
 
+How It Works: The Architecture
+Instead of using the "Glyph Toy" framework, this feature uses a custom background service architecture:
 
+GeminiListenerService.kt (AccessibilityService): This is the "detector." It's a highly efficient service that does nothing but watch for the Google Assistant's UI to appear on screen.
 
-https://github.com/user-attachments/assets/4dbaf7d1-fed0-4a1e-a0eb-38d9cbde046e
+GlyphAnimationService.kt (ForegroundService): This is the "animator." When the detector sees the assistant, it commands this service to start. The service then takes control of the Glyph hardware, plays the pulsing microphone animation, and cleans up after itself.
 
+Key Files to Look At
+All the new logic is self-contained in a few key files. If you want to see how it works, check these out:
 
+app/src/main/java/com/nothinglondon/sdkdemo/GeminiListenerService.kt: The accessibility service that detects the assistant.
 
-Requirements
---------------
-Android Studio, Kotlin, compatible device with Glyph Matrix
+app/src/main/java/com/nothinglondon/sdkdemo/GlyphAnimationService.kt: The foreground service that controls the hardware and contains the animation logic.
 
-Setup
------------------------
-**1.** Prepare your Nothing device and connect it to the computer for development
+app/src/main/AndroidManifest.xml: This file was modified to register the two new services and add the necessary permissions for them to run in the background.
 
-**2.** Clone this project or download this repository as a ZIP and uncompress it to your local directory.
+How to Use
+Build and install the app on your Nothing phone.
 
-**3.** Open a new windows in Android studio and hit file on the menu bar, select open.
+Open the app once. You'll see a single button: "Enable Gemini Glyph Service."
 
-<p align="center">
-<img src="images/open.png" alt="Open Project" style="max-height: 300px;">
-</p>
+Tap the button. This will take you to your phone's Accessibility settings.
 
-**4.** Select the directory where you have cloned the repository or the unzipped folder and click `Open`
+Find "Gemini Glyph Listener" in the list of downloaded apps and turn it on.
 
-<p align="center">
-<img src="images/select.png" alt="Select Project" style="max-height: 300px;">
-</p>
+That's it! The service will now run in the background. The next time you activate the assistant, the Glyph animation will play.
 
-**5.** Once the Gradle files have been synced and your phone is connected properly, you should see your device name shown at the top and a play button. Click the play button to install this example project.
-
-<p align="center">
-<img src="images/run.png" alt="Run Project" style="max-height: 300px;">
-</p>
-
-Running a Toy
-------------
-When the example project is installed on the device, toys within the project needs to be acivated before it can be used.
-
-<table>
-<tr>
-<td width="60%" valign="top">
-
-**1.** Open the `Glyph Interface` from your device settigns.
-
-**2.** Tap on the first button on the right menu to move toys to the enabled state.
-
-</td>
-<td width="40%" align="center">
-<img src="images/toy_carousoul.png" alt="Disabled Toys" style="max-height: 300px;">
-</td>
-</tr>
-
-<tr>
-<td width="60%" valign="top">
-
-**3.** Use the handle bars to drag a toy from `Disabled` to `Active` state.
-
-</td>
-<td width="40%" align="center">
-<img src="images/toy_disable.png" alt="Moving Toys" style="max-height: 300px;">
-</td>
-</tr>
-
-<tr>
-<td width="60%" valign="top">
-
-**4.** The toys should now be in the `Active` state, and can be viewed on the Glyph Matrix using Glyph Touch.
-
-</td>
-<td width="40%" align="center">
-<img src="images/toy_active.png" alt="Active Toys" style="max-height: 300px;">
-</td>
-</tr>
-</table>
-
+Known Issues
+Hardware Release Bug: There appears to be a bug in the current version of the Glyph Developer Kit where calling unInit() does not fully release the hardware lock. After our animation plays, other apps (like the voice recorder) cannot use the Glyphs until the screen is locked and unlocked. We have reported this issue on the Nothing developer forums.
