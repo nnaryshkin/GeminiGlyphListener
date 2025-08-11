@@ -36,8 +36,8 @@ class GeminiListenerService : AccessibilityService() {
                 isGeminiUiVisible = true
                 startService(Intent(this, GlyphAnimationService::class.java))
             }
-            // Sets the animation to stop after 3 seconds of no new Gemini events
-            handler.postDelayed(stopRunnable, 4000)
+            // Set the animation to stop after 4 seconds of no new Gemini events
+            handler.postDelayed(stopRunnable, 5000)
         }
     }
 
